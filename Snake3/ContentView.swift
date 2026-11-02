@@ -47,8 +47,36 @@ final class GameModel {
   var world = World()
 
   func step() {
-    // TODO: Move snake
+
+    guard let head = snake.head else {
+      print("Cannot move headless snake.")
+      return
+    }
+
+    let newHead: Snake.Segment =
+      switch snake.direction {
+      case .left: .init(x: head.x - 1, y: head.y + 0)
+      case .right: .init(x: head.x + 1, y: head.y + 0)
+      case .up: .init(x: head.x + 0, y: head.y - 1)
+      case .down: .init(x: head.x + 0, y: head.y + 1)
+      }
+
+    print("New head is \(newHead)")
+
+    guard isInBounds(newHead) else {
+      print("New head is out of bounds")
+      return
+    }
+    
+    snake.segments.append(newHead)
+        
+    snake.segments.removeFirst()
+
     // TODO: Process food
+  }
+
+  func isInBounds(_ segment: Snake.Segment) -> Bool {
+    segment.x > 0 && segment.x < world.width && segment.y > 0 && segment.y < world.height
   }
 }
 
