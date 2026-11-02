@@ -19,7 +19,8 @@ struct Location: Equatable, Hashable {
 @Observable
 final class GameModel {
 
-  struct Snake {
+  @Observable
+  final class Snake {
 
     enum Direction {
       case left, up, down, right
@@ -33,6 +34,10 @@ final class GameModel {
 
     var segments: OrderedSet<Segment>
     var head: Segment? { segments.last }
+
+    init(segments: any Sequence<Segment>) {
+      self.segments = .init(segments)
+    }
   }
 
   var snake = Snake(segments: [
@@ -105,13 +110,7 @@ final class GameModel {
       return
     }
 
-    let newHead: Location =
-      switch snake.direction {
-      case .left: head.offset(x: -1)
-      case .right: head.offset(x: 1)
-      case .up: head.offset(y: -1)
-      case .down: head.offset(y: 1)
-      }
+    let newHead = head.offset(snake.direction)
 
     guard isInBounds(newHead) else {
       return
@@ -255,6 +254,15 @@ extension Location {
   var point: CGPoint {
     CGPoint(x: x, y: y)
   }
+
+  func offset(_ direction: GameModel.Snake.Direction) -> Self {
+    switch direction {
+    case .down: offset(y: 1)
+    case .up: offset(y: -1)
+    case .left: offset(x: -1)
+    case .right: offset(x: 1)
+    }
+  }
 }
 
 extension GameModel.Snake.Direction {
@@ -266,15 +274,28 @@ extension GameModel.Snake.Direction {
   }
 }
 
+extension GameModel.Snake {
+  func extend(_ direction: GameModel.Snake.Direction, count: Int = 1) -> Self {
+    for _ in 0..<count {
+      guard let head else { return self }
+      segments.append(Segment(location: head.location.offset(direction)))
+    }
+    return self
+  }
+
+  convenience init(origin: Location) {
+    self.init(segments: [
+      .init(location: origin)
+    ])
+  }
+}
+
 #Preview {
   ContentView(
     model: {
       let model = GameModel()
-      model.snake.segments = [
-        .init(location: Location(x: 0, y: 0)),
-        .init(location: Location(x: 1, y: 0)),
-        .init(location: Location(x: 1, y: 1)),
-      ]
+      model.snake = .init(origin: Location(x: 0, y: 0))
+        .extend(.right, count: 2)
       model.placeFood(count: 200)
       return model
     }()

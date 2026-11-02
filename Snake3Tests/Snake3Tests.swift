@@ -70,4 +70,64 @@ struct Snake3Tests {
     #expect(model.canTurn(from: .right, to: .left) == false)
     #expect(model.canTurn(from: .left, to: .right) == false)
   }
+
+  @Test @MainActor func `snake moves right`() async throws {
+    let model = GameModel()
+    model.snake = .init(origin: Location(x: 0, y: 0))
+      .extend(.right, count: 2)
+    model.snake.direction = .right
+    model.step()
+    #expect(
+      model.snake.segments.map(\.location) == [
+        Location(x: 1, y: 0),
+        Location(x: 2, y: 0),
+        Location(x: 3, y: 0),
+      ]
+    )
+  }
+
+  @Test @MainActor func `snake moves down`() async throws {
+    let model = GameModel()
+    model.snake = .init(origin: Location(x: 0, y: 0))
+      .extend(.right, count: 2)
+    model.snake.direction = .down
+    model.step()
+    #expect(
+      model.snake.segments.map(\.location) == [
+        Location(x: 1, y: 0),
+        Location(x: 2, y: 0),
+        Location(x: 2, y: 1),
+      ]
+    )
+  }
+
+  @Test @MainActor func `snake moves up`() async throws {
+    let model = GameModel()
+    model.snake = .init(origin: Location(x: 0, y: 1))
+      .extend(.right, count: 2)
+    model.snake.direction = .up
+    model.step()
+    #expect(
+      model.snake.segments.map(\.location) == [
+        Location(x: 1, y: 1),
+        Location(x: 2, y: 1),
+        Location(x: 2, y: 0),
+      ]
+    )
+  }
+
+  @Test @MainActor func `snake moves left`() async throws {
+    let model = GameModel()
+    model.snake = .init(origin: Location(x: 3, y: 1))
+      .extend(.left, count: 2)
+    model.snake.direction = .left
+    model.step()
+    #expect(
+      model.snake.segments.map(\.location) == [
+        Location(x: 2, y: 1),
+        Location(x: 1, y: 1),
+        Location(x: 0, y: 1),
+      ]
+    )
+  }
 }
