@@ -67,7 +67,33 @@ final class GameModel {
     }
   }
 
+  var queuedInputs: [Snake.Direction] = []
+
+  func turn(_ newDirection: Snake.Direction) {
+    let effectiveDirection = queuedInputs.last ?? snake.direction
+    let isQueued = queuedInputs.last != nil
+    if canTurn(from: effectiveDirection, to: newDirection) {
+      queuedInputs.append(newDirection)
+    } else {
+      print("Can't turn from \(effectiveDirection) (queued: \(isQueued) to \(newDirection)")
+    }
+  }
+
+  func canTurn(from direction1: Snake.Direction, to direction2: Snake.Direction) -> Bool {
+    switch (direction1, direction2) {
+    case (.left, .up), (.left, .down), (.up, .right), (.up, .left), (.right, .up), (.right, .down),
+      (.down, .right), (.down, .left):
+      return true
+    default: return false
+    }
+  }
+
   func step() {
+
+    if let queuedDirection = queuedInputs.first {
+      queuedInputs.removeFirst()
+      snake.direction = queuedDirection
+    }
 
     guard let head = snake.head?.location else {
       print("Cannot move headless snake.")
@@ -109,6 +135,7 @@ struct ContentView: View {
   let model: GameModel
 
   @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+  @FocusState private var focused
 
   var body: some View {
     VStack {
@@ -127,7 +154,21 @@ struct ContentView: View {
     .onReceive(timer) { _ in
       model.step()
     }
-    // TODO: Input handling
+    .focusable()
+    .onAppear {
+      focused = true
+    }
+    .onKeyPress { key in
+      switch key.key {
+      case .leftArrow: model.turn(.left)
+      case .rightArrow: model.turn(.right)
+      case .upArrow: model.turn(.up)
+      case .downArrow: model.turn(.down)
+      default:
+        return .ignored
+      }
+      return .handled
+    }
   }
 }
 
