@@ -7,6 +7,7 @@
 
 import Combine
 import Observation
+import OrderedCollections
 import SwiftUI
 
 struct Location: Equatable, Hashable {
@@ -26,11 +27,11 @@ final class GameModel {
 
     var direction: Direction = .right
 
-    struct Segment {
+    struct Segment: Hashable {
       var location: Location
     }
 
-    var segments: [Segment]
+    var segments: OrderedSet<Segment>
     var head: Segment? { segments.last }
   }
 
@@ -54,17 +55,13 @@ final class GameModel {
     var location = Location()
   }
 
-  var food = [Food]()
+  var food = OrderedSet<Food>()
 
   func placeFood(count: Int = 1) {
     for _ in 0..<count {
       var candidate = Food()
       candidate.location = .random(in: world)
-      while snake.segments
-        .contains(where: { $0.location == candidate.location })
-        || self.food
-          .contains(where: { $0.location == candidate.location })
-      {
+      while snake.segments.contains(.init(location: candidate.location)) {
         candidate.location = .random(in: world)
       }
       food.append(candidate)

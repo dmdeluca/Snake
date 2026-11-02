@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		68A8336930982065005D9F82 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 68A8336830982065005D9F82 /* OrderedCollections */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		68A8334B309806E6005D9F82 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				68A8336930982065005D9F82 /* OrderedCollections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = Snake3;
 			packageProductDependencies = (
+				68A8336830982065005D9F82 /* OrderedCollections */,
 			);
 			productName = Snake3;
 			productReference = 68A8333D309806E4005D9F82 /* Snake3.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 68A83334309806E4005D9F82;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				68A8336730982064005D9F82 /* XCRemoteSwiftPackageReference "swift-collections" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 68A8333E309806E4005D9F82 /* Products */;
 			projectDirPath = "";
@@ -563,6 +572,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		68A8336730982064005D9F82 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.7.5;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		68A8336830982065005D9F82 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 68A8336730982064005D9F82 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 68A83335309806E4005D9F82 /* Project object */;
 }
