@@ -91,9 +91,12 @@ final class GameModel {
 
     snake.segments.append(.init(location: newHead))
 
-    snake.segments.removeFirst()
-
-    // TODO: Process food
+    if let foodIndex = food.firstIndex(where: { $0.location == newHead }) {
+      food.remove(at: foodIndex)
+      placeFood(count: 1)
+    } else {
+      snake.segments.removeFirst()
+    }
   }
 
   func isInBounds(_ location: Location) -> Bool {
@@ -213,7 +216,7 @@ extension Location {
         .init(location: Location(x: 1, y: 0)),
         .init(location: Location(x: 1, y: 1)),
       ]
-      model.placeFood(count: 5)
+      model.placeFood(count: 200)
       return model
     }()
   )
