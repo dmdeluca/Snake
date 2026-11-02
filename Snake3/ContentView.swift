@@ -5,6 +5,7 @@
 //  Created by David DeLuca on 11/1/26.
 //
 
+import AVFoundation
 import Combine
 import Observation
 import OrderedCollections
@@ -17,6 +18,38 @@ struct Location: Equatable, Hashable {
 
 enum Direction {
   case left, up, down, right
+}
+
+enum Sound: String {
+  case blip1 = "SineBlip1"
+  case levelUp1 = "SineGrowth2"
+}
+
+protocol AudioPlayer {
+  func play(_ sound: Sound)
+}
+
+final class AudioPlayerImpl: NSObject, AudioPlayer, AVAudioPlayerDelegate {
+
+  private var players: Set<AVAudioPlayer> = []
+
+  func play(_ sound: Sound) {
+    guard let url = Bundle.main.url(forResource: sound.rawValue, withExtension: "flac") else {
+      assertionFailure("Can't find resource for \(sound)")
+      return
+    }
+    do {
+      let audioPlayer = try AVAudioPlayer(contentsOf: url)
+      players.insert(audioPlayer)
+      audioPlayer.play()
+    } catch {
+      print("Failed to play sound: \(error)")
+    }
+  }
+
+  func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+    players.remove(player)
+  }
 }
 
 @MainActor
@@ -59,6 +92,8 @@ final class GameModel {
   }
 
   var food = OrderedSet<Food>()
+
+  var audioPlayer = AudioPlayerImpl()
 
   func placeFood(count: Int = 1) {
     for _ in 0..<count {
@@ -121,10 +156,13 @@ final class GameModel {
     if let foodIndex = food.firstIndex(where: { $0.location == newHead }) {
       print("Eating food at \(food[foodIndex].location)")
       food.remove(at: foodIndex)
+      audioPlayer.play(.levelUp1)
       placeFood(count: 1)
     } else {
       snake.segments.removeFirst()
     }
+
+    audioPlayer.play(.blip1)
   }
 }
 
