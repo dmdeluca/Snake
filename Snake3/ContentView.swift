@@ -52,15 +52,14 @@ final class AudioPlayerImpl: NSObject, AudioPlayer, AVAudioPlayerDelegate {
   }
 }
 
+struct Segment: Hashable {
+  var location: Location
+}
+
 @Observable
 final class Snake {
 
   var direction: Direction = .right
-
-  struct Segment: Hashable {
-    var location: Location
-  }
-
   var segments: OrderedSet<Segment>
   var head: Segment? { segments.last }
 
