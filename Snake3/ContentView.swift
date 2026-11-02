@@ -26,7 +26,6 @@ final class GameModel {
   @Observable
   final class Snake {
 
-
     var direction: Direction = .right
 
     struct Segment: Hashable {
@@ -41,9 +40,7 @@ final class GameModel {
     }
   }
 
-  var snake = Snake(segments: [
-    Snake.Segment(location: Location(x: 0, y: 0))
-  ])
+  var snake = Snake(origin: Location(x: 0, y: 0))
 
   struct World {
     let width: Int
