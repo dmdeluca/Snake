@@ -9,7 +9,7 @@ import Combine
 import Observation
 import SwiftUI
 
-struct Location: Equatable {
+struct Location: Equatable, Hashable {
   var x: Int = 0
   var y: Int = 0
 }
@@ -50,7 +50,7 @@ final class GameModel {
 
   var world = World()
 
-  struct Food {
+  struct Food: Hashable {
     var location = Location()
   }
 
@@ -59,11 +59,11 @@ final class GameModel {
   func placeFood(count: Int = 1) {
     for _ in 0..<count {
       var candidate = Food()
-
       while snake.segments.contains(where: { $0.location == candidate.location }) {
         candidate.location.x = Int.random(in: 0..<world.width)
         candidate.location.y = Int.random(in: 0..<world.height)
       }
+      food.append(candidate)
     }
   }
 
@@ -97,7 +97,7 @@ final class GameModel {
   }
 
   func isInBounds(_ location: Location) -> Bool {
-    location.x > 0 && location.x < world.width && location.y > 0 && location.y < world.height
+    location.x >= 0 && location.x < world.width && location.y >= 0 && location.y < world.height
   }
 }
 
@@ -114,6 +114,9 @@ struct ContentView: View {
         .overlay {
           GeometryReader { proxy in
             SnakeView(snake: model.snake, world: model.world, bounds: proxy)
+            ForEach(model.food, id: \.self) { food in
+              FoodView(food: food, world: model.world, bounds: proxy)
+            }
           }
         }
     }
@@ -127,10 +130,26 @@ struct ContentView: View {
 
 struct FoodView: View {
   let food: GameModel.Food
+  let world: GameModel.World
   let bounds: GeometryProxy
 
   var body: some View {
-    // Draw food.
+    let h = bounds.size.height
+    let w = bounds.size.width
+    let rows = world.height
+    let cols = world.width
+    let block = CGSize(width: w / CGFloat(cols), height: h / CGFloat(rows))
+    Circle()
+      .fill(.red)
+      .frame(width: block.width, height: block.height)
+      .offset(x: food.location.x.f * block.width, y: food.location.y.f * block.height)
+      .offset(x: block.width * 0.5, y: block.height * 0.5)
+  }
+}
+
+extension Int {
+  var f: Double {
+    Double(self)
   }
 }
 
