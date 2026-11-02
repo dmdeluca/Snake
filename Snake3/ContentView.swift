@@ -59,10 +59,12 @@ final class GameModel {
 
   func placeFood(count: Int = 1) {
     for _ in 0..<count {
+
       guard food.count + snake.segments.count < world.height * world.width else {
         print("The world is too full of snake and food to put any more food.")
         break
       }
+
       var candidate = Food()
       candidate.location = .random(in: world)
       while snake.segments.contains(.init(location: candidate.location))
@@ -203,7 +205,6 @@ struct SnakeView: View {
   let snake: GameModel.Snake
   let world: GameModel.World
   let bounds: GeometryProxy
-  let taper: Double = 2.0
 
   var body: some View {
     let h = bounds.size.height
@@ -211,40 +212,18 @@ struct SnakeView: View {
     let rows = world.height
     let cols = world.width
     let block = CGSize(width: w / CGFloat(cols), height: h / CGFloat(rows))
-
-    ForEach(locationPairs, id: \.self) { pair in
-      Path { p in
-        p.move(to: CGPoint(x: pair.point1.x, y: pair.point1.y).scaled(by: block))
-        p.addLine(to: CGPoint(x: pair.point1.x, y: pair.point1.y).scaled(by: block))
-        p.addLine(to: CGPoint(x: pair.point2.x, y: pair.point2.y).scaled(by: block))
+    Path { p in
+      if let head = snake.head?.location {
+        p.move(to: CGPoint(x: head.x, y: head.y).scaled(by: block))
+        p.addLine(to: CGPoint(x: head.x, y: head.y).scaled(by: block))
+        for segment in snake.segments.dropLast().reversed().map(\.location) {
+          p.addLine(to: CGPoint(x: segment.x, y: segment.y).scaled(by: block))
+        }
       }
-      .stroke(
-        style: StrokeStyle(
-          lineWidth: block.longerSize * (taper > 0 ? (1 - powl(pair.snakePart, taper)) : 1),
-          lineCap: .round,
-          lineJoin: .round
-        )
-      )
     }
     .offset(x: block.width * 0.5, y: block.height * 0.5)
+    .stroke(style: StrokeStyle(lineWidth: block.longerSize, lineCap: .round, lineJoin: .round))
     .foregroundStyle(Color.green)
-  }
-
-  struct Line: Hashable {
-    var point1: Location
-    var point2: Location
-    var snakePart: Double
-  }
-
-  var locationPairs: [Line] {
-    Array(
-      zip(
-        snake.segments.reversed().map(\.location),
-        snake.segments.dropLast().reversed().map(\.location)
-      )
-    ).enumerated().map { (index, element) in
-      Line(point1: element.0, point2: element.1, snakePart: (index.f + 1) / snake.segments.count.f)
-    }
   }
 }
 
