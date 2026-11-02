@@ -110,7 +110,7 @@ final class GameModel {
 
     let newHead = head.offset(snake.direction)
 
-    guard isInBounds(newHead) else {
+    guard world.contains(newHead) else {
       return
     }
 
@@ -125,10 +125,6 @@ final class GameModel {
     } else {
       snake.segments.removeFirst()
     }
-  }
-
-  func isInBounds(_ location: Location) -> Bool {
-    location.x >= 0 && location.x < world.width && location.y >= 0 && location.y < world.height
   }
 }
 
@@ -269,6 +265,12 @@ extension Direction {
     case .down, .up: [.right, .left]
     case .right, .left: [.up, .down]
     }
+  }
+}
+
+extension GameModel.World {
+  func contains(_ location: Location) -> Bool {
+    (0..<width).contains(location.x) && (0..<height).contains(location.y)
   }
 }
 

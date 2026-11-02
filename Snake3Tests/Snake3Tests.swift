@@ -130,4 +130,17 @@ struct Snake3Tests {
       ]
     )
   }
+  
+  @Test @MainActor func `world contains locations`() async throws {
+    let world = GameModel.World(width: 5, height: 5)
+    #expect(world.contains(Location(x:0,y:0)) == true)
+    #expect(world.contains(Location(x:0,y:1)) == true)
+    #expect(world.contains(Location(x:1,y:0)) == true)
+    #expect(world.contains(Location(x:4,y:4)) == true)
+    #expect(world.contains(Location(x:3,y:4)) == true)
+    #expect(world.contains(Location(x:4,y:3)) == true)
+    #expect(world.contains(Location(x:5,y:4)) == false)
+    #expect(world.contains(Location(x:5,y:5)) == false)
+    #expect(world.contains(Location(x:4,y:5)) == false)
+  }
 }
