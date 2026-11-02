@@ -59,9 +59,9 @@ final class GameModel {
   func placeFood(count: Int = 1) {
     for _ in 0..<count {
       var candidate = Food()
+      candidate.location = .random(in: world)
       while snake.segments.contains(where: { $0.location == candidate.location }) {
-        candidate.location.x = Int.random(in: 0..<world.width)
-        candidate.location.y = Int.random(in: 0..<world.height)
+        candidate.location = .random(in: world)
       }
       food.append(candidate)
     }
@@ -138,18 +138,12 @@ struct FoodView: View {
     let w = bounds.size.width
     let rows = world.height
     let cols = world.width
-    let block = CGSize(width: w / CGFloat(cols), height: h / CGFloat(rows))
+    let block = CGSize(width: w / cols.f, height: h / rows.f)
     Circle()
       .fill(.red)
       .frame(width: block.width, height: block.height)
       .offset(x: food.location.x.f * block.width, y: food.location.y.f * block.height)
       .offset(x: block.width * 0.5, y: block.height * 0.5)
-  }
-}
-
-extension Int {
-  var f: Double {
-    Double(self)
   }
 }
 
@@ -180,6 +174,12 @@ struct SnakeView: View {
   }
 }
 
+extension Int {
+  var f: Double {
+    Double(self)
+  }
+}
+
 extension CGPoint {
   func scaled(by size: CGSize) -> CGPoint {
     CGPoint(x: x * size.width, y: y * size.height)
@@ -189,6 +189,15 @@ extension CGPoint {
 extension CGSize {
   var longerSize: CGFloat {
     max(width, height)
+  }
+}
+
+extension Location {
+  static func random(in world: GameModel.World) -> Self {
+    var location = Location()
+    location.x = Int.random(in: 0..<world.width)
+    location.y = Int.random(in: 0..<world.height)
+    return location
   }
 }
 
