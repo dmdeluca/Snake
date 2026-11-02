@@ -143,7 +143,6 @@ struct FoodView: View {
       .fill(.red)
       .frame(width: block.width, height: block.height)
       .offset(x: food.location.x.f * block.width, y: food.location.y.f * block.height)
-      .offset(x: block.width * 0.5, y: block.height * 0.5)
   }
 }
 
