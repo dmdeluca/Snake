@@ -76,10 +76,10 @@ final class GameModel {
 
     let newHead: Location =
       switch snake.direction {
-      case .left: .init(x: head.x - 1, y: head.y + 0)
-      case .right: .init(x: head.x + 1, y: head.y + 0)
-      case .up: .init(x: head.x + 0, y: head.y - 1)
-      case .down: .init(x: head.x + 0, y: head.y + 1)
+      case .left: head.offset(x: -1)
+      case .right: head.offset(x: 1)
+      case .up: head.offset(y: -1)
+      case .down: head.offset(y: 1)
       }
 
     print("New head is \(newHead)")
@@ -197,6 +197,10 @@ extension Location {
     location.x = Int.random(in: 0..<world.width)
     location.y = Int.random(in: 0..<world.height)
     return location
+  }
+
+  func offset(x: Int = 0, y: Int = 0) -> Self {
+    Self(x: self.x + x, y: self.y + y)
   }
 }
 
