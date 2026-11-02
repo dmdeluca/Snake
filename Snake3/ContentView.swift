@@ -72,7 +72,7 @@ struct World {
   let width: Int
   let height: Int
 
-  init(width: Int = 32, height: Int = 32) {
+  init(width: Int = 24, height: Int = 24) {
     self.width = width
     self.height = height
   }
@@ -233,18 +233,65 @@ struct SnakeView: View {
     let rows = world.height
     let cols = world.width
     let block = CGSize(width: w / CGFloat(cols), height: h / CGFloat(rows))
-    Path { p in
-      if let head = snake.head?.location {
-        p.move(to: head.point.scaled(by: block))
-        p.addLine(to: head.point.scaled(by: block))
-        for segment in snake.segments.dropLast().reversed().map(\.location) {
-          p.addLine(to: segment.point.scaled(by: block))
+    ZStack {
+      Path { p in
+        if let head = snake.head?.location {
+          p.move(to: head.point.scaled(by: block))
+          p.addLine(to: head.point.scaled(by: block))
+          for segment in snake.segments.dropLast().reversed().map(\.location) {
+            p.addLine(to: segment.point.scaled(by: block))
+          }
         }
       }
+      .offset(x: block.width * 0.5, y: block.height * 0.5)
+      .stroke(style: StrokeStyle(lineWidth: block.longerSize, lineCap: .round, lineJoin: .round))
+      .foregroundStyle(Color.green)
+
+      if let head = snake.head?.location {
+        let dim = block.longerSize
+        let center = head.point
+          .scaled(by: block)
+          .offset(x: 0.5 * dim, y: 0.5 * dim)
+        let eye1 =
+          center
+          .offset(x: -0.125 * dim, y: -0.125 * dim)
+          .offset(x: 0, y: -0.1 * dim)
+        let eye2 =
+          center
+          .offset(x: 0.125 * dim, y: -0.125 * dim)
+          .offset(x: 0, y: -0.1 * dim)
+        Path { p in
+
+          // Eyes
+          p.move(to: eye1)
+          p.addLine(to: eye1)
+          p.move(to: eye2)
+          p.addLine(to: eye2)
+
+          // Mouth
+          p.move(to: center)
+          p.addArc(
+            center: center,
+            radius: 0.25 * dim,
+            startAngle: .degrees(0),
+            endAngle: .degrees(180),
+            clockwise: false
+          )
+          p.closeSubpath()
+        }
+        .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+        .foregroundStyle(Color.black)
+      }
     }
-    .offset(x: block.width * 0.5, y: block.height * 0.5)
-    .stroke(style: StrokeStyle(lineWidth: block.longerSize, lineCap: .round, lineJoin: .round))
-    .foregroundStyle(Color.green)
+  }
+}
+
+extension CGPoint {
+  func offset(x: CGFloat, y: CGFloat) -> Self {
+    var p = self
+    p.x += x
+    p.y += y
+    return p
   }
 }
 
