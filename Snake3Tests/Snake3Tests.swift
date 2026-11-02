@@ -35,7 +35,7 @@ struct Snake3Tests {
       }
     )
   }
-  
+
   @Test @MainActor func `placing a huge amount of food does not crash or hang`() async throws {
     let model = GameModel()
     model.snake.segments = OrderedSet(
@@ -45,5 +45,29 @@ struct Snake3Tests {
     )
     model.placeFood(count: 50000)
     #expect(model.food.count == model.world.width * model.world.height - model.snake.segments.count)
+  }
+
+  @Test @MainActor func `valid turns`() async throws {
+    let model = GameModel()
+    #expect(model.canTurn(from: .down, to: .right) == true)
+    #expect(model.canTurn(from: .down, to: .left) == true)
+    #expect(model.canTurn(from: .up, to: .right) == true)
+    #expect(model.canTurn(from: .up, to: .left) == true)
+    #expect(model.canTurn(from: .right, to: .up) == true)
+    #expect(model.canTurn(from: .right, to: .down) == true)
+    #expect(model.canTurn(from: .left, to: .up) == true)
+    #expect(model.canTurn(from: .left, to: .down) == true)
+  }
+
+  @Test @MainActor func `invalid turns`() async throws {
+    let model = GameModel()
+    #expect(model.canTurn(from: .down, to: .down) == false)
+    #expect(model.canTurn(from: .up, to: .up) == false)
+    #expect(model.canTurn(from: .right, to: .right) == false)
+    #expect(model.canTurn(from: .left, to: .left) == false)
+    #expect(model.canTurn(from: .down, to: .up) == false)
+    #expect(model.canTurn(from: .up, to: .down) == false)
+    #expect(model.canTurn(from: .right, to: .left) == false)
+    #expect(model.canTurn(from: .left, to: .right) == false)
   }
 }

@@ -90,12 +90,7 @@ final class GameModel {
   }
 
   func canTurn(from direction1: Snake.Direction, to direction2: Snake.Direction) -> Bool {
-    switch (direction1, direction2) {
-    case (.left, .up), (.left, .down), (.up, .right), (.up, .left), (.right, .up), (.right, .down),
-      (.down, .right), (.down, .left):
-      return true
-    default: return false
-    }
+    direction1.availableTurns.contains(direction2)
   }
 
   func step() {
@@ -214,10 +209,10 @@ struct SnakeView: View {
     let block = CGSize(width: w / CGFloat(cols), height: h / CGFloat(rows))
     Path { p in
       if let head = snake.head?.location {
-        p.move(to: CGPoint(x: head.x, y: head.y).scaled(by: block))
-        p.addLine(to: CGPoint(x: head.x, y: head.y).scaled(by: block))
+        p.move(to: head.point.scaled(by: block))
+        p.addLine(to: head.point.scaled(by: block))
         for segment in snake.segments.dropLast().reversed().map(\.location) {
-          p.addLine(to: CGPoint(x: segment.x, y: segment.y).scaled(by: block))
+          p.addLine(to: segment.point.scaled(by: block))
         }
       }
     }
@@ -255,6 +250,19 @@ extension Location {
 
   func offset(x: Int = 0, y: Int = 0) -> Self {
     Self(x: self.x + x, y: self.y + y)
+  }
+
+  var point: CGPoint {
+    CGPoint(x: x, y: y)
+  }
+}
+
+extension GameModel.Snake.Direction {
+  var availableTurns: [Self] {
+    switch self {
+    case .down, .up: [.right, .left]
+    case .right, .left: [.up, .down]
+    }
   }
 }
 
