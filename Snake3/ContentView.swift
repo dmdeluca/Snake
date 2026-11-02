@@ -52,47 +52,44 @@ final class AudioPlayerImpl: NSObject, AudioPlayer, AVAudioPlayerDelegate {
   }
 }
 
+@Observable
+final class Snake {
+
+  var direction: Direction = .right
+
+  struct Segment: Hashable {
+    var location: Location
+  }
+
+  var segments: OrderedSet<Segment>
+  var head: Segment? { segments.last }
+
+  init(segments: any Sequence<Segment>) {
+    self.segments = .init(segments)
+  }
+}
+
+struct World {
+  let width: Int
+  let height: Int
+
+  init(width: Int = 32, height: Int = 32) {
+    self.width = width
+    self.height = height
+  }
+}
+
+struct Food: Hashable {
+  var location = Location()
+}
+
 @MainActor
 @Observable
 final class GameModel {
 
-  @Observable
-  final class Snake {
-
-    var direction: Direction = .right
-
-    struct Segment: Hashable {
-      var location: Location
-    }
-
-    var segments: OrderedSet<Segment>
-    var head: Segment? { segments.last }
-
-    init(segments: any Sequence<Segment>) {
-      self.segments = .init(segments)
-    }
-  }
-
   var snake = Snake(origin: Location(x: 0, y: 0))
-
-  struct World {
-    let width: Int
-    let height: Int
-
-    init(width: Int = 32, height: Int = 32) {
-      self.width = width
-      self.height = height
-    }
-  }
-
   var world = World()
-
-  struct Food: Hashable {
-    var location = Location()
-  }
-
   var food = OrderedSet<Food>()
-
   var audioPlayer = AudioPlayerImpl()
 
   func placeFood(count: Int = 1) {
@@ -208,8 +205,8 @@ struct ContentView: View {
 }
 
 struct FoodView: View {
-  let food: GameModel.Food
-  let world: GameModel.World
+  let food: Food
+  let world: World
   let bounds: GeometryProxy
 
   var body: some View {
@@ -227,8 +224,8 @@ struct FoodView: View {
 
 struct SnakeView: View {
 
-  let snake: GameModel.Snake
-  let world: GameModel.World
+  let snake: Snake
+  let world: World
   let bounds: GeometryProxy
 
   var body: some View {
@@ -271,7 +268,7 @@ extension CGSize {
 }
 
 extension Location {
-  static func random(in world: GameModel.World) -> Self {
+  static func random(in world: World) -> Self {
     var location = Location()
     location.x = Int.random(in: 0..<world.width)
     location.y = Int.random(in: 0..<world.height)
@@ -305,13 +302,13 @@ extension Direction {
   }
 }
 
-extension GameModel.World {
+extension World {
   func contains(_ location: Location) -> Bool {
     (0..<width).contains(location.x) && (0..<height).contains(location.y)
   }
 }
 
-extension GameModel.Snake {
+extension Snake {
   func extend(_ direction: Direction, count: Int = 1) -> Self {
     for _ in 0..<count {
       guard let head else { return self }

@@ -132,7 +132,7 @@ struct Snake3Tests {
   }
   
   @Test @MainActor func `world contains locations`() async throws {
-    let world = GameModel.World(width: 5, height: 5)
+    let world = World(width: 5, height: 5)
     #expect(world.contains(Location(x:0,y:0)) == true)
     #expect(world.contains(Location(x:0,y:1)) == true)
     #expect(world.contains(Location(x:1,y:0)) == true)
