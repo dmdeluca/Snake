@@ -59,6 +59,12 @@ final class GameModel {
 
   func placeFood(count: Int = 1) {
     for _ in 0..<count {
+
+      guard food.count + snake.segments.count < world.height * world.width else {
+        print("The world is too full of snake and food to put any more food.")
+        break
+      }
+
       var candidate = Food()
       candidate.location = .random(in: world)
       while snake.segments.contains(.init(location: candidate.location))

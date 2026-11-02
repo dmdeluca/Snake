@@ -35,4 +35,15 @@ struct Snake3Tests {
       }
     )
   }
+  
+  @Test @MainActor func `placing a huge amount of food does not crash or hang`() async throws {
+    let model = GameModel()
+    model.snake.segments = OrderedSet(
+      (0..<10).map { i in
+        .init(location: Location(x: i, y: 0))
+      }
+    )
+    model.placeFood(count: 50000)
+    #expect(model.food.count == model.world.width * model.world.height - model.snake.segments.count)
+  }
 }
