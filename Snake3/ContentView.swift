@@ -134,7 +134,7 @@ struct ContentView: View {
 
   let model: GameModel
 
-  @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+  @State private var timer = Timer.publish(every: 1.0 / 8.0, on: .main, in: .common).autoconnect()
   @FocusState private var focused
 
   var body: some View {
