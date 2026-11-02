@@ -103,8 +103,7 @@ final class GameModel {
         break
       }
 
-      var candidate = Food()
-      candidate.location = .random(in: world)
+      var candidate = Food(location: .random(in: world))
       while snake.segments.contains(.init(location: candidate.location))
         || food.contains(candidate)
       {
