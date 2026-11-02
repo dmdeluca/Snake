@@ -61,7 +61,9 @@ final class GameModel {
     for _ in 0..<count {
       var candidate = Food()
       candidate.location = .random(in: world)
-      while snake.segments.contains(.init(location: candidate.location)) {
+      while snake.segments.contains(.init(location: candidate.location))
+        || food.contains(candidate)
+      {
         candidate.location = .random(in: world)
       }
       food.append(candidate)
