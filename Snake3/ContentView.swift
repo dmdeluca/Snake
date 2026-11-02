@@ -15,6 +15,10 @@ struct Location: Equatable, Hashable {
   var y: Int = 0
 }
 
+enum Direction {
+  case left, up, down, right
+}
+
 @MainActor
 @Observable
 final class GameModel {
@@ -22,9 +26,6 @@ final class GameModel {
   @Observable
   final class Snake {
 
-    enum Direction {
-      case left, up, down, right
-    }
 
     var direction: Direction = .right
 
@@ -82,9 +83,9 @@ final class GameModel {
     }
   }
 
-  var queuedInputs: [Snake.Direction] = []
+  var queuedInputs: [Direction] = []
 
-  func turn(_ newDirection: Snake.Direction) {
+  func turn(_ newDirection: Direction) {
     let effectiveDirection = queuedInputs.last ?? snake.direction
     let isQueued = queuedInputs.last != nil
     if canTurn(from: effectiveDirection, to: newDirection) {
@@ -94,7 +95,7 @@ final class GameModel {
     }
   }
 
-  func canTurn(from direction1: Snake.Direction, to direction2: Snake.Direction) -> Bool {
+  func canTurn(from direction1: Direction, to direction2: Direction) -> Bool {
     direction1.availableTurns.contains(direction2)
   }
 
@@ -255,7 +256,7 @@ extension Location {
     CGPoint(x: x, y: y)
   }
 
-  func offset(_ direction: GameModel.Snake.Direction) -> Self {
+  func offset(_ direction: Direction) -> Self {
     switch direction {
     case .down: offset(y: 1)
     case .up: offset(y: -1)
@@ -265,7 +266,7 @@ extension Location {
   }
 }
 
-extension GameModel.Snake.Direction {
+extension Direction {
   var availableTurns: [Self] {
     switch self {
     case .down, .up: [.right, .left]
@@ -275,7 +276,7 @@ extension GameModel.Snake.Direction {
 }
 
 extension GameModel.Snake {
-  func extend(_ direction: GameModel.Snake.Direction, count: Int = 1) -> Self {
+  func extend(_ direction: Direction, count: Int = 1) -> Self {
     for _ in 0..<count {
       guard let head else { return self }
       segments.append(Segment(location: head.location.offset(direction)))
