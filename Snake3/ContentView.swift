@@ -5,6 +5,7 @@
 //  Created by David DeLuca on 11/1/26.
 //
 
+import Combine
 import Observation
 import SwiftUI
 
@@ -36,7 +37,7 @@ final class GameModel {
   struct World {
     let width: Int
     let height: Int
-    
+
     init(width: Int = 32, height: Int = 32) {
       self.width = width
       self.height = height
@@ -55,6 +56,8 @@ struct ContentView: View {
 
   let model: GameModel
 
+  @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
   var body: some View {
     VStack {
       Color.black
@@ -66,7 +69,9 @@ struct ContentView: View {
         }
     }
     .padding()
-    // TODO: Timer
+    .onReceive(timer) { _ in
+      model.step()
+    }
     // TODO: Input handling
   }
 }
