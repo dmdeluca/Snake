@@ -9,6 +9,11 @@ import Combine
 import Observation
 import SwiftUI
 
+struct Location: Equatable {
+  var x: Int = 0
+  var y: Int = 0
+}
+
 @MainActor
 @Observable
 final class GameModel {
@@ -22,8 +27,7 @@ final class GameModel {
     var direction: Direction = .right
 
     struct Segment {
-      let x: Int
-      let y: Int
+      var location: Location
     }
 
     var segments: [Segment]
@@ -31,7 +35,7 @@ final class GameModel {
   }
 
   var snake = Snake(segments: [
-    Snake.Segment(x: 0, y: 0)
+    Snake.Segment(location: Location(x: 0, y: 0))
   ])
 
   struct World {
@@ -46,14 +50,31 @@ final class GameModel {
 
   var world = World()
 
+  struct Food {
+    var location = Location()
+  }
+
+  var food = [Food]()
+
+  func placeFood(count: Int = 1) {
+    for _ in 0..<count {
+      var candidate = Food()
+
+      while snake.segments.contains(where: { $0.location == candidate.location }) {
+        candidate.location.x = Int.random(in: 0..<world.width)
+        candidate.location.y = Int.random(in: 0..<world.height)
+      }
+    }
+  }
+
   func step() {
 
-    guard let head = snake.head else {
+    guard let head = snake.head?.location else {
       print("Cannot move headless snake.")
       return
     }
 
-    let newHead: Snake.Segment =
+    let newHead: Location =
       switch snake.direction {
       case .left: .init(x: head.x - 1, y: head.y + 0)
       case .right: .init(x: head.x + 1, y: head.y + 0)
@@ -67,16 +88,16 @@ final class GameModel {
       print("New head is out of bounds")
       return
     }
-    
-    snake.segments.append(newHead)
-        
+
+    snake.segments.append(.init(location: newHead))
+
     snake.segments.removeFirst()
 
     // TODO: Process food
   }
 
-  func isInBounds(_ segment: Snake.Segment) -> Bool {
-    segment.x > 0 && segment.x < world.width && segment.y > 0 && segment.y < world.height
+  func isInBounds(_ location: Location) -> Bool {
+    location.x > 0 && location.x < world.width && location.y > 0 && location.y < world.height
   }
 }
 
@@ -104,6 +125,15 @@ struct ContentView: View {
   }
 }
 
+struct FoodView: View {
+  let food: GameModel.Food
+  let bounds: GeometryProxy
+
+  var body: some View {
+    // Draw food.
+  }
+}
+
 struct SnakeView: View {
 
   let snake: GameModel.Snake
@@ -117,10 +147,10 @@ struct SnakeView: View {
     let cols = world.width
     let block = CGSize(width: w / CGFloat(cols), height: h / CGFloat(rows))
     Path { p in
-      if let head = snake.head {
+      if let head = snake.head?.location {
         p.move(to: CGPoint(x: head.x, y: head.y).scaled(by: block))
         p.addLine(to: CGPoint(x: head.x, y: head.y).scaled(by: block))
-        for segment in snake.segments.dropLast().reversed() {
+        for segment in snake.segments.dropLast().reversed().map(\.location) {
           p.addLine(to: CGPoint(x: segment.x, y: segment.y).scaled(by: block))
         }
       }
@@ -148,10 +178,11 @@ extension CGSize {
     model: {
       let model = GameModel()
       model.snake.segments = [
-        .init(x: 0, y: 0),
-        .init(x: 1, y: 0),
-        .init(x: 1, y: 1),
+        .init(location: Location(x: 0, y: 0)),
+        .init(location: Location(x: 1, y: 0)),
+        .init(location: Location(x: 1, y: 1)),
       ]
+      model.placeFood(count: 5)
       return model
     }()
   )
