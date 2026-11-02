@@ -60,10 +60,15 @@ final class GameModel {
     for _ in 0..<count {
       var candidate = Food()
       candidate.location = .random(in: world)
-      while snake.segments.contains(where: { $0.location == candidate.location }) {
+      while snake.segments
+        .contains(where: { $0.location == candidate.location })
+        || self.food
+          .contains(where: { $0.location == candidate.location })
+      {
         candidate.location = .random(in: world)
       }
       food.append(candidate)
+      print("Placed food at \(candidate.location)")
     }
   }
 
@@ -108,16 +113,16 @@ final class GameModel {
       case .down: head.offset(y: 1)
       }
 
-    print("New head is \(newHead)")
-
     guard isInBounds(newHead) else {
-      print("New head is out of bounds")
       return
     }
+
+    print("New head is \(newHead)")
 
     snake.segments.append(.init(location: newHead))
 
     if let foodIndex = food.firstIndex(where: { $0.location == newHead }) {
+      print("Eating food at \(food[foodIndex].location)")
       food.remove(at: foodIndex)
       placeFood(count: 1)
     } else {
