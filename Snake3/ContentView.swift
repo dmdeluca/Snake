@@ -209,11 +209,7 @@ struct FoodView: View {
   let bounds: GeometryProxy
 
   var body: some View {
-    let h = bounds.size.height
-    let w = bounds.size.width
-    let rows = world.height
-    let cols = world.width
-    let block = CGSize(width: w / cols.f, height: h / rows.f)
+    let block = world.block(in: bounds)
     Circle()
       .fill(.red)
       .frame(width: block.width, height: block.height)
@@ -228,62 +224,74 @@ struct SnakeView: View {
   let bounds: GeometryProxy
 
   var body: some View {
-    let h = bounds.size.height
-    let w = bounds.size.width
-    let rows = world.height
-    let cols = world.width
-    let block = CGSize(width: w / CGFloat(cols), height: h / CGFloat(rows))
     ZStack {
-      Path { p in
-        if let head = snake.head?.location {
-          p.move(to: head.point.scaled(by: block))
-          p.addLine(to: head.point.scaled(by: block))
-          for segment in snake.segments.dropLast().reversed().map(\.location) {
-            p.addLine(to: segment.point.scaled(by: block))
-          }
-        }
-      }
-      .offset(x: block.width * 0.5, y: block.height * 0.5)
-      .stroke(style: StrokeStyle(lineWidth: block.longerSize, lineCap: .round, lineJoin: .round))
-      .foregroundStyle(Color.green)
-
+      snakeBody
       if let head = snake.head?.location {
-        let dim = block.longerSize
-        let center = head.point
-          .scaled(by: block)
-          .offset(x: 0.5 * dim, y: 0.5 * dim)
-        let eye1 =
-          center
-          .offset(x: -0.125 * dim, y: -0.125 * dim)
-          .offset(x: 0, y: -0.1 * dim)
-        let eye2 =
-          center
-          .offset(x: 0.125 * dim, y: -0.125 * dim)
-          .offset(x: 0, y: -0.1 * dim)
-        Path { p in
-
-          // Eyes
-          p.move(to: eye1)
-          p.addLine(to: eye1)
-          p.move(to: eye2)
-          p.addLine(to: eye2)
-
-          // Mouth
-          p.move(to: center)
-          p.addArc(
-            center: center,
-            radius: 0.25 * dim,
-            startAngle: .degrees(0),
-            endAngle: .degrees(180),
-            clockwise: false
-          )
-          p.closeSubpath()
-        }
-        .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-        .foregroundStyle(Color.black)
+        snakeFace(at: head)
       }
     }
   }
+
+  @ViewBuilder private var snakeBody: some View {
+    let block = world.block(in: bounds)
+    Path { p in
+      if let head = snake.head?.location {
+        p.move(to: head.point.scaled(by: block))
+        p.addLine(to: head.point.scaled(by: block))
+        for segment in snake.segments.dropLast().reversed().map(\.location) {
+          p.addLine(to: segment.point.scaled(by: block))
+        }
+      }
+    }
+    .offset(x: block.width * 0.5, y: block.height * 0.5)
+    .stroke(style: StrokeStyle(lineWidth: block.longerSize, lineCap: .round, lineJoin: .round))
+    .foregroundStyle(Color.green)
+  }
+
+  @ViewBuilder private func snakeFace(at head: Location) -> some View {
+    let center = head.point
+      .scaled(by: block)
+      .offset(x: 0.5 * dim, y: 0.5 * dim)
+    snakeEyes(center: center)
+    snakeMouth(center: center)
+  }
+
+  @ViewBuilder private func snakeMouth(center: CGPoint) -> some View {
+    Path { p in
+      p.move(to: center.offset(x: 0.3 * dim, y: 0))
+      p.addArc(
+        center: center,
+        radius: 0.3 * dim,
+        startAngle: .degrees(0),
+        endAngle: .degrees(180),
+        clockwise: false
+      )
+    }
+    .stroke(style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+    .foregroundStyle(Color.black)
+  }
+
+  @ViewBuilder private func snakeEyes(center: CGPoint) -> some View {
+    let eye1 =
+      center
+      .offset(x: -0.125 * dim, y: -0.125 * dim)
+      .offset(x: 0, y: -0.05 * dim)
+    let eye2 =
+      center
+      .offset(x: 0.125 * dim, y: -0.125 * dim)
+      .offset(x: 0, y: -0.05 * dim)
+    Path { p in
+      p.move(to: eye1)
+      p.addLine(to: eye1)
+      p.move(to: eye2)
+      p.addLine(to: eye2)
+    }
+    .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+    .foregroundStyle(Color.black)
+  }
+
+  private var block: CGSize { world.block(in: bounds) }
+  private var dim: CGFloat { block.longerSize }
 }
 
 extension CGPoint {
@@ -293,17 +301,15 @@ extension CGPoint {
     p.y += y
     return p
   }
+
+  func scaled(by size: CGSize) -> CGPoint {
+    CGPoint(x: x * size.width, y: y * size.height)
+  }
 }
 
 extension Int {
   var f: Double {
     Double(self)
-  }
-}
-
-extension CGPoint {
-  func scaled(by size: CGSize) -> CGPoint {
-    CGPoint(x: x * size.width, y: y * size.height)
   }
 }
 
@@ -351,6 +357,14 @@ extension Direction {
 extension World {
   func contains(_ location: Location) -> Bool {
     (0..<width).contains(location.x) && (0..<height).contains(location.y)
+  }
+
+  func block(in bounds: GeometryProxy) -> CGSize {
+    let h = bounds.size.height
+    let w = bounds.size.width
+    let rows = height
+    let cols = width
+    return CGSize(width: w / cols.f, height: h / rows.f)
   }
 }
 
