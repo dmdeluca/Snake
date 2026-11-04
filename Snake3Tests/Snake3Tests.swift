@@ -130,17 +130,60 @@ struct Snake3Tests {
       ]
     )
   }
-  
+
   @Test @MainActor func `world contains locations`() async throws {
     let world = World(width: 5, height: 5)
-    #expect(world.contains(Location(x:0,y:0)) == true)
-    #expect(world.contains(Location(x:0,y:1)) == true)
-    #expect(world.contains(Location(x:1,y:0)) == true)
-    #expect(world.contains(Location(x:4,y:4)) == true)
-    #expect(world.contains(Location(x:3,y:4)) == true)
-    #expect(world.contains(Location(x:4,y:3)) == true)
-    #expect(world.contains(Location(x:5,y:4)) == false)
-    #expect(world.contains(Location(x:5,y:5)) == false)
-    #expect(world.contains(Location(x:4,y:5)) == false)
+    #expect(world.contains(Location(x: 0, y: 0)) == true)
+    #expect(world.contains(Location(x: 0, y: 1)) == true)
+    #expect(world.contains(Location(x: 1, y: 0)) == true)
+    #expect(world.contains(Location(x: 4, y: 4)) == true)
+    #expect(world.contains(Location(x: 3, y: 4)) == true)
+    #expect(world.contains(Location(x: 4, y: 3)) == true)
+    #expect(world.contains(Location(x: 5, y: 4)) == false)
+    #expect(world.contains(Location(x: 5, y: 5)) == false)
+    #expect(world.contains(Location(x: 4, y: 5)) == false)
+  }
+
+  @Test @MainActor func `snake dies when it goes off map`() async throws {
+    // Map:
+    // OOSO
+    // OOSO
+    // OOSO
+    // OOOO
+    let model = GameModel()
+    model.world = .init(width: 4, height: 4)
+    model.snake = .init(origin: Location(x: 2, y: 0))
+      .extend(.down, count: 2)
+    model.snake.direction = .right
+    model.step()
+    #expect(model.gameplayState == .playing)
+    model.step()  // Dies on this step.
+    #expect(model.gameplayState == .gameOver)
+  }
+
+  @Test @MainActor func `snake dies when it eats itself`() async throws {
+    // Map:
+    // OOSOOOOO
+    // OOSOOOOO
+    // OOSOOOOO
+    // OOSOOOOO
+    // OOSOOOOO
+    // OOSOOOOO
+    // OOSOOOOO
+    // OOOOOOOO
+    let model = GameModel()
+    model.world = .init(width: 8, height: 8)
+    model.snake = .init(origin: Location(x: 2, y: 0))
+      .extend(.down, count: 6)
+    model.snake.direction = .right
+    model.step()
+    model.step()
+    model.snake.direction = .up
+    model.step()
+    model.snake.direction = .left
+    model.step()
+    #expect(model.gameplayState == .playing)
+    model.step()  // Dies on this step.
+    #expect(model.gameplayState == .gameOver)
   }
 }

@@ -82,10 +82,16 @@ struct Food: Hashable {
   var location = Location()
 }
 
+enum GameplayState {
+  case playing
+  case gameOver
+}
+
 @MainActor
 @Observable
 final class GameModel {
 
+  var gameplayState = GameplayState.playing
   var snake = Snake(origin: Location(x: 0, y: 0))
   var world = World()
   var food = OrderedSet<Food>()
@@ -128,6 +134,10 @@ final class GameModel {
 
   func step() {
 
+    guard gameplayState == .playing else {
+      return
+    }
+
     if let queuedDirection = queuedInputs.first {
       queuedInputs.removeFirst()
       snake.direction = queuedDirection
@@ -140,8 +150,12 @@ final class GameModel {
 
     let newHead = head.offset(snake.direction)
 
-    guard world.contains(newHead) else {
+    switch canMove(to: newHead) {
+    case .blockedBySnake, .offMap:
+      die()
       return
+    case .canMove:
+      break
     }
 
     print("New head is \(newHead)")
@@ -159,6 +173,24 @@ final class GameModel {
 
     audioPlayer.play(.blip1)
   }
+
+  private enum CanMoveDecision {
+    case blockedBySnake, offMap, canMove
+  }
+
+  private func canMove(to location: Location) -> CanMoveDecision {
+    guard world.contains(location) else {
+      return .offMap
+    }
+    guard !snake.segments.contains(Segment(location: location)) else {
+      return .blockedBySnake
+    }
+    return .canMove
+  }
+
+  private func die() {
+    gameplayState = .gameOver
+  }
 }
 
 struct ContentView: View {
@@ -169,18 +201,11 @@ struct ContentView: View {
   @FocusState private var focused
 
   var body: some View {
-    VStack {
-      Color.black
-        .frame(width: 640, height: 640)
-        .overlay {
-          GeometryReader { proxy in
-            SnakeView(snake: model.snake, world: model.world, bounds: proxy)
-            ForEach(model.food, id: \.self) { food in
-              FoodView(food: food, world: model.world, bounds: proxy)
-            }
-          }
-        }
+    ZStack {
+      SnakeWorldView(model: model)
     }
+    .frame(width: 640, height: 640)
+    .background(.black)
     .padding()
     .onReceive(timer) { _ in
       model.step()
@@ -199,6 +224,20 @@ struct ContentView: View {
         return .ignored
       }
       return .handled
+    }
+  }
+}
+
+struct SnakeWorldView: View {
+
+  let model: GameModel
+
+  var body: some View {
+    GeometryReader { proxy in
+      SnakeView(snake: model.snake, world: model.world, bounds: proxy)
+      ForEach(model.food, id: \.self) { food in
+        FoodView(food: food, world: model.world, bounds: proxy)
+      }
     }
   }
 }
