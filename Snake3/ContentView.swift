@@ -173,6 +173,14 @@ final class GameModel {
 
     audioPlayer.play(.blip1)
   }
+  
+  func reset() {
+    snake = Snake(origin: Location(x:0,y:0))
+      .extend(.right, count: 1)
+    gameplayState = .playing
+    food = []
+    placeFood(count: 5)
+  }
 
   private enum CanMoveDecision {
     case blockedBySnake, offMap, canMove
@@ -203,6 +211,20 @@ struct ContentView: View {
   var body: some View {
     ZStack {
       SnakeWorldView(model: model)
+      switch model.gameplayState {
+      case .gameOver:
+        Text("YOU DIED")
+          .foregroundColor(.black)
+          .monospaced()
+          .padding()
+          .background(.white)
+          .task {
+            try? await Task.sleep(for: .seconds(2))
+            model.reset()
+          }
+      default:
+        EmptyView()
+      }
     }
     .frame(width: 640, height: 640)
     .background(.black)
